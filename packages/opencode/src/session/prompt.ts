@@ -1842,6 +1842,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
 
     const templateParts = await resolvePromptParts(template)
     const isSubtask = (agent.mode === "subagent" && command.subtask !== false) || command.subtask === true
+    const isSkill = command.source === "skill"
     const parts = isSubtask
       ? [
           {
@@ -1857,7 +1858,19 @@ NOTE: At any point in time through this workflow you should feel free to ask the
             prompt: templateParts.find((y) => y.type === "text")?.text ?? "",
           },
         ]
-      : [...templateParts, ...(input.parts ?? [])]
+      : isSkill
+        ? [
+            // Display-only part: shown in UI but not sent to LLM (ignored: true)
+            {
+              type: "text" as const,
+              text: `/${input.command}${input.arguments ? ` ${input.arguments}` : ""}`,
+              ignored: true,
+            },
+            // Skill content: sent to LLM but hidden from UI display (synthetic: true)
+            ...templateParts.map((p) => ({ ...p, synthetic: true as const })),
+            ...(input.parts ?? []),
+          ]
+        : [...templateParts, ...(input.parts ?? [])]
 
     const userAgent = isSubtask ? (input.agent ?? (await Agent.defaultAgent())) : agentName
     const userModel = isSubtask
