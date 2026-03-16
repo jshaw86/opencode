@@ -224,6 +224,17 @@ export namespace MessageV2 {
   })
   export type SubtaskPart = z.infer<typeof SubtaskPart>
 
+  export const SkillPart = PartBase.extend({
+    type: z.literal("skill"),
+    command: z.string(),
+    arguments: z.string().optional(),
+    content: z.string(),
+    description: z.string(),
+  }).meta({
+    ref: "SkillPart",
+  })
+  export type SkillPart = z.infer<typeof SkillPart>
+
   export const RetryPart = PartBase.extend({
     type: z.literal("retry"),
     attempt: z.number(),
@@ -378,6 +389,7 @@ export namespace MessageV2 {
     .discriminatedUnion("type", [
       TextPart,
       SubtaskPart,
+      SkillPart,
       ReasoningPart,
       FilePart,
       ToolPart,
@@ -598,6 +610,12 @@ export namespace MessageV2 {
             userMessage.parts.push({
               type: "text",
               text: "The following tool was executed by the user",
+            })
+          }
+          if (part.type === "skill") {
+            userMessage.parts.push({
+              type: "text",
+              text: part.content,
             })
           }
         }

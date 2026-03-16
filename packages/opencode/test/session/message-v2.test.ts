@@ -266,6 +266,81 @@ describe("session.message-v2.toModelMessage", () => {
     ])
   })
 
+  test("converts skill part to text content for LLM", () => {
+    const messageID = "m-user"
+
+    const input: MessageV2.WithParts[] = [
+      {
+        info: userInfo(messageID),
+        parts: [
+          {
+            ...basePart(messageID, "p1"),
+            type: "skill",
+            command: "jira",
+            arguments: "search issues",
+            content: "You are a Jira expert. Help users with Jira tasks.",
+            description: "Jira skill helper",
+          },
+        ] as MessageV2.Part[],
+      },
+    ]
+
+    expect(MessageV2.toModelMessages(input, model)).toStrictEqual([
+      {
+        role: "user",
+        content: [{ type: "text", text: "You are a Jira expert. Help users with Jira tasks." }],
+      },
+    ])
+  })
+
+  test("skill part validates with required fields", () => {
+    const skillPart = {
+      id: PartID.make("prt_skill_test_1"),
+      sessionID: SessionID.make("ses_test"),
+      messageID: MessageID.make("msg_user_1"),
+      type: "skill" as const,
+      command: "jira",
+      content: "Skill instructions here",
+      description: "Jira helper",
+    }
+
+    const result = MessageV2.SkillPart.safeParse(skillPart)
+    expect(result.success).toBe(true)
+  })
+
+  test("skill part validates with optional arguments field", () => {
+    const skillPart = {
+      id: PartID.make("prt_skill_test_2"),
+      sessionID: SessionID.make("ses_test"),
+      messageID: MessageID.make("msg_user_2"),
+      type: "skill" as const,
+      command: "slack",
+      arguments: "read channel messages",
+      content: "Slack skill instructions",
+      description: "Slack integration",
+    }
+
+    const result = MessageV2.SkillPart.safeParse(skillPart)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.arguments).toBe("read channel messages")
+    }
+  })
+
+  test("skill part fails validation without required fields", () => {
+    const invalidPart = {
+      id: PartID.make("prt_skill_test_3"),
+      sessionID: SessionID.make("ses_test"),
+      messageID: MessageID.make("msg_user_3"),
+      type: "skill" as const,
+      command: "jira",
+      // missing content and description
+    }
+
+    const result = MessageV2.SkillPart.safeParse(invalidPart)
+    expect(result.success).toBe(false)
+  })
+
   test("converts assistant tool completion into tool-call + tool-result messages with attachments", () => {
     const userID = "m-user"
     const assistantID = "m-assistant"

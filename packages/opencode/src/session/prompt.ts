@@ -152,6 +152,16 @@ export namespace SessionPrompt {
           .meta({
             ref: "SubtaskPartInput",
           }),
+        MessageV2.SkillPart.omit({
+          messageID: true,
+          sessionID: true,
+        })
+          .partial({
+            id: true,
+          })
+          .meta({
+            ref: "SkillPartInput",
+          }),
       ]),
     ),
   })
@@ -1860,14 +1870,13 @@ NOTE: At any point in time through this workflow you should feel free to ask the
         ]
       : isSkill
         ? [
-            // Display-only part: shown in UI but not sent to LLM (ignored: true)
             {
-              type: "text" as const,
-              text: `/${input.command}${input.arguments ? ` ${input.arguments}` : ""}`,
-              ignored: true,
+              type: "skill" as const,
+              command: input.command,
+              arguments: input.arguments,
+              content: templateParts.find((y) => y.type === "text")?.text ?? "",
+              description: command.description ?? "",
             },
-            // Skill content: sent to LLM but hidden from UI display (synthetic: true)
-            ...templateParts.map((p) => ({ ...p, synthetic: true as const })),
             ...(input.parts ?? []),
           ]
         : [...templateParts, ...(input.parts ?? [])]
