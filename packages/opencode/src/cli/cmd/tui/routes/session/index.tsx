@@ -1237,6 +1237,14 @@ function UserMessage(props: {
   const ctx = use()
   const local = useLocal()
   const text = createMemo(() => props.parts.flatMap((x) => (x.type === "text" && !x.synthetic ? [x] : []))[0])
+  const skill = createMemo(() => props.parts.find((x) => x.type === "skill"))
+  const displayText = createMemo(() => {
+    const skillPart = skill()
+    if (skillPart && skillPart.type === "skill") {
+      return `/${skillPart.command}${skillPart.arguments ? ` ${skillPart.arguments}` : ""}`
+    }
+    return text()?.text
+  })
   const files = createMemo(() => props.parts.flatMap((x) => (x.type === "file" ? [x] : [])))
   const sync = useSync()
   const { theme } = useTheme()
@@ -1250,7 +1258,7 @@ function UserMessage(props: {
 
   return (
     <>
-      <Show when={text()}>
+      <Show when={displayText()}>
         <box
           id={props.message.id}
           border={["left"]}
@@ -1272,7 +1280,7 @@ function UserMessage(props: {
             backgroundColor={hover() ? theme.backgroundElement : theme.backgroundPanel}
             flexShrink={0}
           >
-            <text fg={theme.text}>{text()?.text}</text>
+            <text fg={theme.text}>{displayText()}</text>
             <Show when={files().length}>
               <box flexDirection="row" paddingBottom={metadataVisible() ? 1 : 0} paddingTop={1} gap={1} flexWrap="wrap">
                 <For each={files()}>
