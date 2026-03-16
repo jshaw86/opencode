@@ -40,6 +40,9 @@ export function DialogMessage(props: {
                   if (part.type === "text") {
                     if (!part.synthetic) agg.input += part.text
                   }
+                  if (part.type === "skill") {
+                    agg.input += `/${part.command}${part.arguments ? ` ${part.arguments}` : ""}`
+                  }
                   if (part.type === "file") agg.parts.push(part)
                   return agg
                 },
@@ -63,6 +66,9 @@ export function DialogMessage(props: {
             const text = parts.reduce((agg, part) => {
               if (part.type === "text" && !part.synthetic) {
                 agg += part.text
+              }
+              if (part.type === "skill") {
+                agg += `/${part.command}${part.arguments ? ` ${part.arguments}` : ""}`
               }
               return agg
             }, "")
@@ -88,6 +94,9 @@ export function DialogMessage(props: {
                 (agg, part) => {
                   if (part.type === "text") {
                     if (!part.synthetic) agg.input += part.text
+                  }
+                  if (part.type === "skill") {
+                    agg.input += `/${part.command}${part.arguments ? ` ${part.arguments}` : ""}`
                   }
                   if (part.type === "file") agg.parts.push(part)
                   return agg
