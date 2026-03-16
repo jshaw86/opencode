@@ -152,6 +152,16 @@ export namespace SessionPrompt {
           .meta({
             ref: "SubtaskPartInput",
           }),
+        MessageV2.SkillPart.omit({
+          messageID: true,
+          sessionID: true,
+        })
+          .partial({
+            id: true,
+          })
+          .meta({
+            ref: "SkillPartInput",
+          }),
       ]),
     ),
   })
@@ -1842,6 +1852,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
 
     const templateParts = await resolvePromptParts(template)
     const isSubtask = (agent.mode === "subagent" && command.subtask !== false) || command.subtask === true
+    const isSkill = command.source === "skill"
     const parts = isSubtask
       ? [
           {
@@ -1857,7 +1868,18 @@ NOTE: At any point in time through this workflow you should feel free to ask the
             prompt: templateParts.find((y) => y.type === "text")?.text ?? "",
           },
         ]
-      : [...templateParts, ...(input.parts ?? [])]
+      : isSkill
+        ? [
+            {
+              type: "skill" as const,
+              command: input.command,
+              arguments: input.arguments,
+              content: templateParts.find((y) => y.type === "text")?.text ?? "",
+              description: command.description ?? "",
+            },
+            ...(input.parts ?? []),
+          ]
+        : [...templateParts, ...(input.parts ?? [])]
 
     const userAgent = isSubtask ? (input.agent ?? (await Agent.defaultAgent())) : agentName
     const userModel = isSubtask

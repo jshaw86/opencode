@@ -292,6 +292,17 @@ export type SubtaskPart = {
   command?: string
 }
 
+export type SkillPart = {
+  id: string
+  sessionID: string
+  messageID: string
+  type: "skill"
+  command: string
+  arguments?: string
+  content: string
+  description: string
+}
+
 export type ReasoningPart = {
   id: string
   sessionID: string
@@ -511,6 +522,7 @@ export type CompactionPart = {
 export type Part =
   | TextPart
   | SubtaskPart
+  | SkillPart
   | ReasoningPart
   | FilePart
   | ToolPart
@@ -1761,6 +1773,15 @@ export type SubtaskPartInput = {
     modelID: string
   }
   command?: string
+}
+
+export type SkillPartInput = {
+  id?: string
+  type: "skill"
+  command: string
+  arguments?: string
+  content: string
+  description: string
 }
 
 export type ProviderAuthMethod = {
@@ -3280,7 +3301,7 @@ export type SessionPromptData = {
     format?: OutputFormat
     system?: string
     variant?: string
-    parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>
+    parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput | SkillPartInput>
   }
   path: {
     sessionID: string
@@ -3480,7 +3501,7 @@ export type SessionPromptAsyncData = {
     format?: OutputFormat
     system?: string
     variant?: string
-    parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput>
+    parts: Array<TextPartInput | FilePartInput | AgentPartInput | SubtaskPartInput | SkillPartInput>
   }
   path: {
     sessionID: string

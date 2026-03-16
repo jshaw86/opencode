@@ -21,6 +21,7 @@ import {
   Message as MessageType,
   Part as PartType,
   ReasoningPart,
+  SkillPart,
   TextPart,
   ToolPart,
   UserMessage,
@@ -1308,6 +1309,43 @@ export function MessageDivider(props: { label: string }) {
 PART_MAPPING["compaction"] = function CompactionPartDisplay() {
   const i18n = useI18n()
   return <MessageDivider label={i18n.t("ui.messagePart.compaction")} />
+}
+
+PART_MAPPING["skill"] = function SkillPartDisplay(props) {
+  const [open, setOpen] = createSignal(false)
+  const part = () => props.part as SkillPart
+
+  return (
+    <div data-component="skill-part" class="my-2">
+      <Collapsible open={open()} onOpenChange={setOpen} variant="ghost">
+        <Collapsible.Trigger class="w-full">
+          <div
+            data-slot="skill-command"
+            class="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-surface-weak transition-colors"
+          >
+            <Icon name="brain" class="size-4 icon-strong-base shrink-0" />
+            <span class="text-14-medium text-text-strong">
+              /{part().command}
+              <Show when={part().arguments}>
+                <span class="text-text-weak"> {part().arguments}</span>
+              </Show>
+            </span>
+            <div class="flex-1" />
+            <Collapsible.Arrow />
+          </div>
+        </Collapsible.Trigger>
+
+        <Collapsible.Content>
+          <div data-slot="skill-content" class="mt-2 mx-3 p-3 bg-surface-base rounded-md border border-stroke-weak">
+            <div class="text-12-medium text-text-weak mb-2">Skill Instructions</div>
+            <div class="text-13-regular text-text-base">
+              <Markdown text={part().content} />
+            </div>
+          </div>
+        </Collapsible.Content>
+      </Collapsible>
+    </div>
+  )
 }
 
 PART_MAPPING["text"] = function TextPartDisplay(props) {
