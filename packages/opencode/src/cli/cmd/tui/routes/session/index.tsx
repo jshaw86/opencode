@@ -1249,6 +1249,7 @@ function UserMessage(props: {
   const sync = useSync()
   const { theme } = useTheme()
   const [hover, setHover] = createSignal(false)
+  const [showSkillContent, setShowSkillContent] = createSignal(false)
   const queued = createMemo(() => props.pending && props.message.id > props.pending)
   const color = createMemo(() => local.agent.color(props.message.agent))
   const queuedFg = createMemo(() => selectedForeground(theme, color()))
@@ -1281,6 +1282,24 @@ function UserMessage(props: {
             flexShrink={0}
           >
             <text fg={theme.text}>{displayText()}</text>
+            <Show when={skill()}>
+              <box paddingTop={1}>
+                <text fg={theme.textMuted} onMouseUp={() => setShowSkillContent(!showSkillContent())}>
+                  <span style={{ fg: theme.textMuted }}>{showSkillContent() ? "▼" : "▶"} Skill Instructions</span>
+                </text>
+                <Show when={showSkillContent() && skill()?.type === "skill"}>
+                  <box
+                    paddingTop={1}
+                    paddingLeft={2}
+                    paddingRight={1}
+                    backgroundColor={theme.backgroundElement}
+                    marginTop={1}
+                  >
+                    <text fg={theme.textMuted}>{skill()!.type === "skill" ? skill()!.content : ""}</text>
+                  </box>
+                </Show>
+              </box>
+            </Show>
             <Show when={files().length}>
               <box flexDirection="row" paddingBottom={metadataVisible() ? 1 : 0} paddingTop={1} gap={1} flexWrap="wrap">
                 <For each={files()}>
